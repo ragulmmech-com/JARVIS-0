@@ -1,0 +1,12 @@
+{
+  "name": "JARVIS",
+  "description": "Title: J.A.R.V.I.S. – Autonomous Multimodal AI \u0026 Personal Companion\nOverview:\nMeet J.A.R.V.I.S., a next-generation autonomous AI system built for both high-powered productivity and heartfelt human connection. Combining ultra-low latency real-time voice, vision intelligence, code execution, and deep contextual memory, J.A.R.V.I.S. is not just an artificial intelligence—it is your personal companion, mentor, and ride-or-die friend.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>J.A.R.V.I.S. // Holographic Quantum Interface</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    /* CSS RESET & VARIABLES */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-midnight: #01040a;
+      --panel-glass: rgba(4, 13, 26, 0.75);
+      --border-cyan: rgba(0, 243, 255, 0.3);
+      --cyan-glow: #00f3ff;
+      --electric-blue: #0044ff;
+      --violet-glow: #9900ff;
+      --violet-light: #c084fc;
+      --emerald-glow: #10b981;
+      --text-main: #e0f7ff;
+      --text-dim: #5c7f99;
+      --font-display: 'Orbitron', monospace;
+      --font-mono: 'Share Tech Mono', 'JetBrains Mono', monospace;
+    }
+
+    body {
+      background-color: var(--bg-midnight);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    /* Ambient Holographic Lighting & Grid Scanlines */
+    body::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(0, 243, 255, 0.08) 0%, rgba(1, 4, 10, 0.95) 75%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 3px, 6px 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* HEADER */
+    header {
+      position: relative;
+      z-index: 10;
+      padding: 16px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-cyan);
+      background: rgba(2, 7, 18, 0.85);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-beacon {
+      width: 10px;
+      height: 10px;
+      background: var(--cyan-glow);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--cyan-glow);
+      animation: pulseBeacon 2s infinite ease-in-out;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 15px;
+      letter-spacing: 0.25em;
+      color: var(--cyan-glow);
+      text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+    }
+
+    .header-status {
+      font-size: 11px;
+      color: var(--text-dim);
+      display: flex;
+      gap: 20px;
+    }
+
+    .header-status span strong {
+      color: var(--cyan-glow);
+    }
+
+    /* MAIN TRI-PANEL LAYOUT */
+    main {
+      position: relative;
+      z-index: 10;
+      flex: 1;
+      display: grid;
+      grid-template-columns: 310px 1fr 310px;
+      gap: 20px;
+      padding: 24px;
+      align-items: stretch;
+      max-width: 1700px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    @media (max-width: 1024px) {
+      main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+      }
+    }
+
+    .hud-panel {
+      background: var(--panel-glass);
+      border: 1px solid var(--border-cyan);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 0 25px rgba(0, 243, 255, 0.05);
+      backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(0, 243, 255, 0.15);
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+    }
+
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      color: var(--cyan-glow);
+      text-transform: uppercase;
+    }
+
+    .live-badge {
+      font-size: 10px;
+      color: var(--emerald-glow);
+      animation: pulseBeacon 1.5s infinite;
+    }
+
+    /* SYSTEM DIAGNOSTICS (LEFT PANEL) */
+    .metric-box {
+      margin-bottom: 16px;
+    }
+
+    .metric-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      margin-bottom: 6px;
+      color: #94b8d1;
+    }
+
+    .metric-val {
+      color: var(--cyan-glow);
+      font-weight: bold;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      background: rgba(0, 15, 35, 0.9);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .fill-cyan {
+      background: linear-gradient(90deg, var(--electric-blue), var(--cyan-glow));
+      box-shadow: 0 0 8px var(--cyan-glow);
+    }
+
+    .fill-violet {
+      background: linear-gradient(90deg, var(--electric-blue), var(--violet-glow));
+      box-shadow: 0 0 8px var(--violet-glow);
+    }
+
+    .fill-emerald {
+      background: linear-gradient(90deg, var(--cyan-glow), var(--emerald-glow));
+      box-shadow: 0 0 8px var(--emerald-glow);
+    }
+
+    /* TERMINAL LOG */
+    .terminal-container {
+      margin-top: 14px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 150px;
+    }
+
+    .terminal-title {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      letter-spacing: 0.1em;
+    }
+
+    .terminal-feed {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 10px;
+      line-height: 1.5;
+      overflow-y: auto;
+      max-height: 200px;
+      color: #7b9eb6;
+    }
+
+    .terminal-feed div {
+      margin-bottom: 4px;
+    }
+
+    .terminal-feed .log-time {
+      color: var(--cyan-glow);
+    }
+
+    .terminal-feed .log-user {
+      color: #ffd166;
+    }
+
+    .terminal-feed .log-ai {
+      color: var(--emerald-glow);
+    }
+
+    /* CENTRAL CORE NODE (AI ORB) & RINGS */
+    .core-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .orb-system {
+      position: relative;
+      width: 380px;
+      height: 380px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @media (max-width: 600px) {
+      .orb-system {
+        width: 280px;
+        height: 280px;
+      }
+    }
+
+    /* SVG Telemetry Rings */
+    .concentric-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .ring-inner {
+      transform-origin: 200px 200px;
+      animation: rotateClockwise 40s linear infinite;
+      transition: stroke 0.6s ease;
+    }
+
+    .ring-middle {
+      transform-origin: 200px 200px;
+      animation: rotateCounterClockwise 28s linear infinite;
+      transition: stroke 0.6s ease;
+    }
+
+    .ring-outer {
+      transform-origin: 200px 200px;
+      animation: rotateClockwise 18s linear infinite;
+      transition: stroke 0.6s ease;
+    }
+
+    /* Thinking State for Concentric Rings */
+    .core-stage.thinking .ring-inner {
+      animation: rotateClockwise 4s linear infinite;
+    }
+
+    .core-stage.thinking .ring-middle {
+      animation: rotateCounterClockwise 5s linear infinite;
+      stroke: var(--violet-glow) !important;
+    }
+
+    .core-stage.thinking .ring-outer {
+      animation: rotateClockwise 3s linear infinite;
+      stroke: var(--violet-light) !important;
+    }
+
+    /* Ambient Glow Behind Orb */
+    .ambient-sphere {
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      filter: blur(50px);
+      background: rgba(0, 243, 255, 0.25);
+      transition: all 0.8s ease;
+      pointer-events: none;
+    }
+
+    .core-stage.thinking .ambient-sphere {
+      background: rgba(153, 0, 255, 0.4);
+      filter: blur(65px);
+      transform: scale(1.18);
+    }
+
+    /* CENTRAL CORE SPHERE (30% WIDTH) */
+    .ai-orb-sphere {
+      position: relative;
+      z-index: 5;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ffffff 0%, var(--cyan-glow) 25%, var(--electric-blue) 65%, #001233 100%);
+      box-shadow: 0 0 50px var(--cyan-glow), inset 0 0 20px #ffffff;
+      animation: orbBreathing 2s ease-in-out infinite alternate;
+      cursor: pointer;
+      transition: background 0.8s ease, box-shadow 0.8s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Orb Internal Lattice */
+    .ai-orb-sphere::after {
+      content: '';
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 0 25px #ffffff;
+      opacity: 0.9;
+      animation: pulseCore 1.5s infinite alternate;
+    }
+
+    /* Thinking State for AI Orb */
+    .core-stage.thinking .ai-orb-sphere {
+      background: radial-gradient(circle at 35% 35%, #ffffff 0%, var(--violet-light) 25%, var(--violet-glow) 65%, #220338 100%);
+      box-shadow: 0 0 65px var(--violet-glow), inset 0 0 25px #ffffff;
+    }
+
+    .orb-status-pill {
+      margin-top: 24px;
+      background: rgba(4, 13, 26, 0.85);
+      border: 1px solid var(--border-cyan);
+      border-radius: 30px;
+      padding: 6px 16px;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--cyan-glow);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .orb-status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan-glow);
+      box-shadow: 0 0 8px var(--cyan-glow);
+    }
+
+    .core-stage.thinking .orb-status-dot {
+      background: var(--violet-light);
+      box-shadow: 0 0 8px var(--violet-light);
+    }
+
+    /* RIGHT PANEL (AI MATRIX RESPONSE) */
+    .response-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid var(--border-cyan);
+      border-radius: 8px;
+      padding: 14px;
+      position: relative;
+      overflow-y: auto;
+      max-height: 250px;
+    }
+
+    .response-header {
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      color: rgba(0, 243, 255, 0.7);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .typewriter-body {
+      font-size: 13px;
+      line-height: 1.6;
+      color: #c9efff;
+      white-space: pre-wrap;
+    }
+
+    .typewriter-cursor {
+      display: inline-block;
+      width: 7px;
+      height: 15px;
+      background: var(--cyan-glow);
+      vertical-align: middle;
+      margin-left: 4px;
+      animation: blinkCursor 0.8s infinite;
+    }
+
+    /* ACTIVE STATUS WIDGETS */
+    .status-widget-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .widget-cell {
+      background: rgba(2, 11, 24, 0.9);
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+
+    .widget-label {
+      font-size: 9px;
+      color: var(--text-dim);
+      font-family: var(--font-display);
+      margin-bottom: 2px;
+    }
+
+    .widget-val {
+      font-size: 11px;
+      font-weight: bold;
+      color: var(--cyan-glow);
+    }
+
+    .widget-val.secure {
+      color: var(--emerald-glow);
+    }
+
+    /* FOOTER (USER PROMPT INTERFACE) */
+    footer {
+      position: relative;
+      z-index: 10;
+      padding: 16px 24px;
+      background: linear-gradient(to top, rgba(1, 4, 10, 0.95), transparent);
+      border-top: 1px solid var(--border-cyan);
+    }
+
+    .input-form {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-prefix {
+      position: absolute;
+      left: 16px;
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--cyan-glow);
+      letter-spacing: 0.1em;
+      pointer-events: none;
+      text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
+    }
+
+    .prompt-input {
+      width: 100%;
+      background: rgba(4, 13, 26, 0.95);
+      border: 1px solid var(--border-cyan);
+      border-radius: 12px;
+      padding: 14px 50px 14px 135px;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      outline: none;
+      box-shadow: inset 0 0 15px rgba(0, 243, 255, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    .prompt-input:focus {
+      border-color: var(--cyan-glow);
+      box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.15), 0 0 15px rgba(0, 243, 255, 0.2);
+    }
+
+    .mic-btn {
+      position: absolute;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: var(--cyan-glow);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .mic-btn:hover {
+      background: rgba(0, 243, 255, 0.1);
+      box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+    }
+
+    .mic-btn.active {
+      color: #ff3366;
+      animation: pulseMic 1.2s infinite;
+    }
+
+    .submit-btn {
+      background: linear-gradient(135deg, var(--electric-blue), var(--cyan-glow));
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 22px;
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      filter: brightness(1.2);
+      transform: translateY(-1px);
+    }
+
+    /* KEYFRAME ANIMATIONS */
+    @keyframes orbBreathing {
+      0% {
+        transform: scale(1);
+      }
+      100% {
+        transform: scale(1.05);
+      }
+    }
+
+    @keyframes pulseCore {
+      0% {
+        transform: scale(0.9);
+        opacity: 0.7;
+      }
+      100% {
+        transform: scale(1.1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes rotateClockwise {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes rotateCounterClockwise {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(-360deg); }
+    }
+
+    @keyframes pulseBeacon {
+      0%, 100% { opacity: 0.5; transform: scale(0.95); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    @keyframes pulseMic {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); filter: drop-shadow(0 0 8px #ff3366); }
+    }
+
+    @keyframes blinkCursor {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP HUD BAR -->
+  <header>
+    <div class="brand">
+      <div class="brand-beacon"></div>
+      <div class="brand-title">J.A.R.V.I.S. // QUANTUM CORE</div>
+    </div>
+    <div class="header-status">
+      <span>NODE: <strong>STARK-PRIMARY</strong></span>
+      <span>SECURITY: <strong>CIPHER-5</strong></span>
+      <span>UPLINK: <strong>ONLINE</strong></span>
+    </div>
+  </header>
+
+  <!-- MAIN HUD TRI-PANEL ARCHITECTURE -->
+  <main>
+    <!-- LEFT PANEL: System Diagnostics Grid -->
+    <section class="hud-panel">
+      <div>
+        <div class="panel-header">
+          <span class="panel-title">SYSTEM DIAGNOSTICS</span>
+          <span class="live-badge">&#x25CF; LIVE</span>
+        </div>
+
+        <!-- CPU Node -->
+        <div class="metric-box">
+          <div class="metric-label-row">
+            <span>CPU NODE LOAD</span>
+            <span class="metric-val" id="val-cpu">42%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill fill-cyan" id="bar-cpu" style="width: 42%;"></div>
+          </div>
+        </div>
+
+        <!-- Neural Net -->
+        <div class="metric-box">
+          <div class="metric-label-row">
+            <span>NEURAL NET MATRIX</span>
+            <span class="metric-val" id="val-neural">89%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill fill-violet" id="bar-neural" style="width: 89%;"></div>
+          </div>
+        </div>
+
+        <!-- Quantum Sync -->
+        <div class="metric-box">
+          <div class="metric-label-row">
+            <span>QUANTUM SYNC</span>
+            <span class="metric-val" id="val-quantum">99%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill fill-emerald" id="bar-quantum" style="width: 99%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scrolling System Log Terminal -->
+      <div class="terminal-container">
+        <div class="terminal-title">&#x25B6; TERMINAL TELEMETRY FEED</div>
+        <div class="terminal-feed" id="terminal-feed">
+          <div><span class="log-time">[00:00:01]</span> HOLOGRAPHIC PIPELINE INITIALIZED.</div>
+          <div><span class="log-time">[00:00:02]</span> ARC REACTOR RESONANCE STABLE (100%).</div>
+          <div><span class="log-time">[00:00:03]</span> CONCENTRIC RINGS LOCKED (120 FPS).</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CENTER PANEL: Central Core Node (AI Orb) & Concentric Telemetry Rings -->
+    <section class="core-stage" id="core-stage">
+      <div class="orb-system">
+        <!-- Ambient Radial Glow -->
+        <div class="ambient-sphere"></div>
+
+        <!-- SVG Concentric Telemetry Rings -->
+        <svg class="concentric-svg" viewBox="0 0 400 400">
+          <!-- Inner Ring: Clockwise, slow -->
+          <circle class="ring-inner" cx="200" cy="200" r="125" fill="none" stroke="#00f3ff" stroke-width="1.5" stroke-dasharray="80 20 40 20" />
+          <!-- Middle Ring: Counter-clockwise, medium, dashed -->
+          <circle class="ring-middle" cx="200" cy="200" r="155" fill="none" stroke="#0044ff" stroke-width="2" stroke-dasharray="12 8" />
+          <!-- Outer Ring: Clockwise, fast, segmented -->
+          <circle class="ring-outer" cx="200" cy="200" r="185" fill="none" stroke="#00f3ff" stroke-width="1.5" stroke-dasharray="25 15 5 15 45 15" />
+        </svg>
+
+        <!-- Central Glowing Sphere Core -->
+        <div class="ai-orb-sphere" id="ai-orb" title="Click to pulse AI core"></div>
+      </div>
+
+      <div class="orb-status-pill">
+        <div class="orb-status-dot"></div>
+        <span id="core-state-text">CORE STATE: IDLE // MONITORING</span>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: AI Matrix Response -->
+    <section class="hud-panel">
+      <div>
+        <div class="panel-header">
+          <span class="panel-title">AI MATRIX RESPONSE</span>
+          <span style="font-size: 10px; color: var(--cyan-glow);">VER 8.5</span>
+        </div>
+
+        <div class="response-container">
+          <div class="response-header">&#x25B6; DECRYPTED OUTPUT STREAM:</div>
+          <div class="typewriter-body">
+            <span id="typewriter-text"></span><span class="typewriter-cursor"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Status Widgets -->
+      <div class="status-widget-grid">
+        <div class="widget-cell">
+          <div class="widget-label">NETWORK STATUS</div>
+          <div class="widget-val secure">&#x2714; SECURE</div>
+        </div>
+        <div class="widget-cell">
+          <div class="widget-label">UPLINK NODE</div>
+          <div class="widget-val">&#x25CF; ACTIVE</div>
+        </div>
+        <div class="widget-cell">
+          <div class="widget-label">BANDWIDTH</div>
+          <div class="widget-val" id="val-bandwidth">1.42 GB/S</div>
+        </div>
+        <div class="widget-cell">
+          <div class="widget-label">PROTOCOL</div>
+          <div class="widget-val" style="color: var(--violet-light);">STARK-V85</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER: User Prompt Interface -->
+  <footer>
+    <form class="input-form" id="prompt-form">
+      <div class="input-wrapper">
+        <span class="input-prefix">J.A.R.V.I.S. &gt;</span>
+        <input 
+          type="text" 
+          id="user-input" 
+          class="prompt-input" 
+          placeholder="Enter command or query world intelligence..." 
+          autocomplete="off"
+        />
+        <button type="button" class="mic-btn" id="mic-btn" title="Toggle Audio Input">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="22"></line>
+          </svg>
+        </button>
+      </div>
+      <button type="submit" class="submit-btn">EXECUTE</button>
+    </form>
+  </footer>
+
+  <!-- SCRIPT -->
+  <script>
+    (function() {
+      // DOM Elements
+      const coreStage = document.getElementById('core-stage');
+      const coreStateText = document.getElementById('core-state-text');
+      const aiOrb = document.getElementById('ai-orb');
+      const promptForm = document.getElementById('prompt-form');
+      const userInput = document.getElementById('user-input');
+      const micBtn = document.getElementById('mic-btn');
+      const typewriterText = document.getElementById('typewriter-text');
+      const terminalFeed = document.getElementById('terminal-feed');
+
+      // Metric Elements
+      const valCpu = document.getElementById('val-cpu');
+      const barCpu = document.getElementById('bar-cpu');
+      const valNeural = document.getElementById('val-neural');
+      const barNeural = document.getElementById('bar-neural');
+      const valQuantum = document.getElementById('val-quantum');
+      const barQuantum = document.getElementById('bar-quantum');
+      const valBandwidth = document.getElementById('val-bandwidth');
+
+      // State
+      let metrics = {
+        cpu: 42,
+        neural: 89,
+        quantum: 99
+      };
+
+      let initialResponse = "J.A.R.V.I.S. Core Matrix Initialized. All sovereign neural links active. Ready for high-velocity computing, deep telemetry diagnostics, and local operating system control.";
+      let currentTypewriterTimeout = null;
+
+      // 1. DYNAMIC TYPEWRITER EFFECT
+      function runTypewriter(text, speed = 18) {
+        if (currentTypewriterTimeout) clearTimeout(currentTypewriterTimeout);
+        typewriterText.textContent = "";
+        let i = 0;
+
+        function typeChar() {
+          if (i < text.length) {
+            typewriterText.textContent += text.charAt(i);
+            i++;
+            currentTypewriterTimeout = setTimeout(typeChar, speed);
+          }
+        }
+        typeChar();
+      }
+
+      // Initialize typewriter on boot
+      runTypewriter(initialResponse);
+
+      // 2. LOGGING TO TERMINAL
+      function logToTerminal(msg, type = 'normal') {
+        const time = new Date().toTimeString().split(' ')[0];
+        const line = document.createElement('div');
+        let classType = '';
+        if (type === 'user') classType = 'log-user';
+        else if (type === 'ai') classType = 'log-ai';
+
+        line.innerHTML = `<span class="log-time">[${time}]</span> <span class="${classType}">${msg}</span>`;
+        terminalFeed.appendChild(line);
+        terminalFeed.scrollTop = terminalFeed.scrollHeight;
+      }
+
+      // 3. FLUCTUATE DIAGNOSTICS EVERY SECOND
+      setInterval(function() {
+        // CPU jitter
+        metrics.cpu = Math.min(96, Math.max(28, metrics.cpu + Math.floor(Math.random() * 5) - 2));
+        valCpu.textContent = metrics.cpu + '%';
+        barCpu.style.width = metrics.cpu + '%';
+
+        // Neural Net jitter
+        metrics.neural = Math.min(99, Math.max(76, metrics.neural + Math.floor(Math.random() * 3) - 1));
+        valNeural.textContent = metrics.neural + '%';
+        barNeural.style.width = metrics.neural + '%';
+
+        // Quantum Sync jitter
+        metrics.quantum = Math.min(100, Math.max(95, metrics.quantum + (Math.random() > 0.6 ? 0 : -1)));
+        valQuantum.textContent = metrics.quantum + '%';
+        barQuantum.style.width = metrics.quantum + '%';
+
+        // Bandwidth jitter
+        const bw = (1.35 + Math.random() * 0.25).toFixed(2);
+        valBandwidth.textContent = bw + ' GB/S';
+      }, 1100);
+
+      // 4. INTERFACE STATES: IDLE TO THINKING
+      function triggerThinkingState(query) {
+        coreStage.classList.add('thinking');
+        coreStateText.textContent = "CORE STATE: THINKING // REASONING";
+        logToTerminal(`USER PROMPT: "${query}"`, 'user');
+        logToTerminal("NEURAL QUERY: Analyzing query through multi-agent matrix...", 'normal');
+
+        // Fetch live response from backend API
+        fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: query, model: 'gemini-3.6-flash' })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          const reply = data.text || "வேலை முடிஞ்சது மச்சி! எல்லாம் பக்காவா ரெடியா இருக்கு.";
+          runTypewriter(reply);
+          logToTerminal("RESPONSE DISPATCHED: Telemetry synchronized.", 'ai');
+        })
+        .catch(function(err) {
+          const fallback = `Diagnostic reply: Query '${query}' cataloged in telemetry cache. Core functioning within safety limits.`;
+          runTypewriter(fallback);
+          logToTerminal("RESPONSE DISPATCHED: Offline fallback cache used.", 'ai');
+        })
+        .finally(function() {
+          setTimeout(function() {
+            coreStage.classList.remove('thinking');
+            coreStateText.textContent = "CORE STATE: IDLE // MONITORING";
+          }, 1500);
+        });
+      }
+
+      // Handle user prompt submit
+      promptForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const text = userInput.value.trim();
+        if (!text) return;
+        userInput.value = '';
+        triggerThinkingState(text);
+      });
+
+      // Click Orb directly to trigger quick pulse
+      aiOrb.addEventListener('click', function() {
+        triggerThinkingState("Run complete quantum self-diagnostic.");
+      });
+
+      // Toggle Mic button
+      micBtn.addEventListener('click', function() {
+        micBtn.classList.toggle('active');
+        if (micBtn.classList.contains('active')) {
+          logToTerminal("AUDIO MIC ACTIVE: Voice recognition stream enabled.", 'ai');
+          userInput.setAttribute('placeholder', "Listening for 'Hey JARVIS' or spoken command...");
+        } else {
+          logToTerminal("AUDIO MIC MUTED.", 'normal');
+          userInput.setAttribute('placeholder', "Enter command or query world intelligence...");
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
